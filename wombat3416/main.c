@@ -36,7 +36,7 @@ bool conditional_is_black(void *np) {
 
 //square up, move forward first (after tick guess, will move slowly to increase accuracy)
 void straight_square_up(int speed, int tick_guess) {
-    cmpc(FL);
+    mmcmpc_all(FL, BL, FR, BR, mmend);
     //dynspeed is adjusted to increase accuracy
     int dynspeed = speed;
 	while(true) {
@@ -130,7 +130,7 @@ int main() {
     printf("driving\n");
     straight_square_up(1500, 1000);
     printf("rotating\n");
-	claw_rotate(435, 800, 2);
+	claw_rotate(455, 800, 2);
     printf("opening claw\n");
     ticks = 900;
     mmdrive_with_gyro(gyro_z, 750, mmticks_reached, (void*)&ticks, bias);
@@ -138,11 +138,11 @@ int main() {
     puts("\t[+]Retrieved cup1. Moving to beverage station...");
     //Bring pink cup back
     printf("claw rotating2\n");
-    claw_rotate(435, 880, 0);
+    claw_rotate(455, 870, 0);
     printf("square up 2\n");
     straight_square_up(-1500, 400);
     calibrate_gyro_axis(&bias, 15, gyro_z);
-    ticks = 4350;
+    ticks = 4050;
     printf("driving3\n");
     msleep(50);
     mmdrive_with_gyro(gyro_z, -1500, mmticks_reached, (void*)&ticks, bias);
@@ -150,16 +150,41 @@ int main() {
     ticks = 600;
     msleep(100);
     mm_sidedrive(MM_SIDEDRIVE_RIGHT, 1500, &mmticks_reached, &ticks);
-    mmdrive_rotate_deg(95);
-    ticks = 1200;
+    mmdrive_rotate_deg(92);
+    ticks = 1215;
     calibrate_gyro_axis(&bias, 15, gyro_z);
     mmdrive_with_gyro(gyro_z, 750, &mmticks_reached, (void*)&ticks, bias);
     puts("Putting cup down");
-    claw_rotate(0, 775, 0);
+    claw_rotate(115, 775, 2);
     msleep(200);
     claw_power(1300);
     msleep(30);
     claw_power(CLAW_OPEN);
+    puts("\t[+]Done with cup1. Moving to cup2...");
+    puts("ram squaring up");
+    claw_rotate(115, 2047, 5);
+    mmdrive_rotate_deg(-2);
+    ticks = 1000;
+    mmdrive_with_gyro(gyro_z, -1500, &mmticks_reached, (void*)&ticks, bias);
+    claw_rotate(0, 1400, 2);
+    mmdrive(1500, 500);
+    mmdrive(500, 500);
+    msleep(200);
+    mmdrive(-400, 210);
+    ticks = 200;
+    mm_sidedrive(MM_SIDEDRIVE_LEFT, 1500, &mmticks_reached, (void*)&ticks);
+    mmdrive_rotate_deg(-90);
+    puts("line squaring up");
+    ticks = 2000;
+    mmdrive_with_gyro(gyro_z, 1500, &mmticks_reached, (void*)&ticks, bias);
+    claw_rotate(300, 800, 3);
+    straight_square_up(500, 500);
+	ticks = 1500;
+    mmdrive_with_gyro(gyro_z, 750, &mmticks_reached, (void*)&ticks, bias);
+    claw_power(1300);
+    claw_rotate(300, 870, 1);
+    ticks = 1100;
+    mmdrive_with_gyro(gyro_z, -750, &mmticks_reached, (void*)&ticks, bias);
+    ticks = 1600;
+    mm_sidedrive(MM_SIDEDRIVE_RIGHT, 1500, &mmticks_reached, (void*)&ticks);
 }
-
-
