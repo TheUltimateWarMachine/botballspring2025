@@ -53,16 +53,16 @@ void straight_square_up(int speed, int tick_guess) {
             mav(BR, dynspeed);
         }
 		if(is_black(analog(TH_LEFT)) && !is_black(analog(TH_RIGHT))) {
-        	mav(BL, dynspeed);
-            mav(FL, dynspeed);
-            mav(FR, dynspeed);
-            mav(BR, dynspeed);
-        }
-        if(!is_black(analog(TH_LEFT)) && is_black(analog(TH_RIGHT))) {
         	mav(BL, -dynspeed);
             mav(FL, -dynspeed);
             mav(FR, -dynspeed);
             mav(BR, -dynspeed);
+        }
+        if(!is_black(analog(TH_LEFT)) && is_black(analog(TH_RIGHT))) {
+        	mav(BL, dynspeed);
+            mav(FL, dynspeed);
+            mav(FR, dynspeed);
+            mav(BR, dynspeed);
         }
         msleep(20);
     }
@@ -120,19 +120,30 @@ void claw_power(int power) {
 }
 
 int main() {
-    //Get the pink cup
+    claw_power(CLAW_OPEN);
+    claw_rotate(250, 800, 1);
     puts("\t[+]Getting cup1...");
     enable_servos();
     double bias;
     claw_power(CLAW_OPEN);
     calibrate_gyro_axis(&bias, 25, gyro_z);
-    int ticks = 2100;
+    int ticks = 600;
+    //Get the 1st cup
+    mmdrive(-1500, 2500);
+    mmdrive(-1500, 1000);
+    mmdrive(750, ticks);
+    mm_sidedrive(MM_SIDEDRIVE_RIGHT, 500, &mmticks_reached, &ticks);
+    mmdrive_rotate_deg(90);
     printf("driving\n");
     straight_square_up(1500, 1000);
+    ticks = 1000;
+    mm_sidedrive(MM_SIDEDRIVE_LEFT, 900, &mmticks_reached, &ticks);
+    ticks = 80;
+    mm_sidedrive(MM_SIDEDRIVE_RIGHT, 500, &mmticks_reached, &ticks);
     printf("rotating\n");
 	claw_rotate(455, 800, 2);
     printf("opening claw\n");
-    ticks = 900;
+    ticks = 1000;
     mmdrive_with_gyro(gyro_z, 750, mmticks_reached, (void*)&ticks, bias);
     claw_power(CLAW_CLOSED);
     puts("\t[+]Retrieved cup1. Moving to beverage station...");
@@ -142,26 +153,27 @@ int main() {
     printf("square up 2\n");
     straight_square_up(-1500, 400);
     calibrate_gyro_axis(&bias, 15, gyro_z);
-    ticks = 4050;
+    ticks = 4150;
     printf("driving3\n");
-    msleep(50);
     mmdrive_with_gyro(gyro_z, -1500, mmticks_reached, (void*)&ticks, bias);
     claw_rotate(0, 1400, 0);
-    ticks = 600;
     msleep(100);
+    ticks = 600;
     mm_sidedrive(MM_SIDEDRIVE_RIGHT, 1500, &mmticks_reached, &ticks);
+    mmdrive(750, 400);
+    mmdrive(-750, 80);
     mmdrive_rotate_deg(92);
-    ticks = 1215;
+    ticks = 770;
     calibrate_gyro_axis(&bias, 15, gyro_z);
-    mmdrive_with_gyro(gyro_z, 750, &mmticks_reached, (void*)&ticks, bias);
+    mmdrive_with_gyro(gyro_z, 1500, &mmticks_reached, (void*)&ticks, bias);
     puts("Putting cup down");
     claw_rotate(115, 775, 2);
     msleep(200);
     claw_power(1300);
     msleep(30);
     claw_power(CLAW_OPEN);
+    mmdrive(500, 500);
     puts("\t[+]Done with cup1. Moving to cup2...");
-    puts("ram squaring up");
     claw_rotate(115, 2047, 5);
     mmdrive_rotate_deg(-2);
     ticks = 1000;
@@ -175,16 +187,43 @@ int main() {
     mm_sidedrive(MM_SIDEDRIVE_LEFT, 1500, &mmticks_reached, (void*)&ticks);
     mmdrive_rotate_deg(-90);
     puts("line squaring up");
-    ticks = 2000;
+    ticks = 2200;
     mmdrive_with_gyro(gyro_z, 1500, &mmticks_reached, (void*)&ticks, bias);
     claw_rotate(300, 800, 3);
-    straight_square_up(500, 500);
-	ticks = 1500;
-    mmdrive_with_gyro(gyro_z, 750, &mmticks_reached, (void*)&ticks, bias);
-    claw_power(1300);
+    straight_square_up(7600, 500);
+	ticks = 1050;
+    mmdrive_with_gyro(gyro_z, 1500, &mmticks_reached, (void*)&ticks, bias);
     claw_rotate(300, 870, 1);
-    ticks = 1100;
-    mmdrive_with_gyro(gyro_z, -750, &mmticks_reached, (void*)&ticks, bias);
-    ticks = 1600;
+    claw_power(1700);
+    puts("\t[+] Got cup2, adding drinks.");
+    straight_square_up(-1000, 1750);
+    puts("sleeping for 5 seconds");
+    msleep(5000);
+    ticks = 400;
+    mmdrive_with_gyro(gyro_z, -1500, &mmticks_reached, (void*)&ticks, bias);
+    puts("sliding right");
+    int sensor = 0;
+    mm_sidedrive(MM_SIDEDRIVE_RIGHT, 1500, &mmblack_reached, (void*)&sensor);
+    ticks = 750;
     mm_sidedrive(MM_SIDEDRIVE_RIGHT, 1500, &mmticks_reached, (void*)&ticks);
+    straight_square_up(750, 500);
+    puts("Depositing cup");
+    claw_rotate(1024, 950, 5);
+    msleep(300);
+    claw_power(1200);
+    msleep(300);
+    claw_power(CLAW_OPEN);
+    puts("Going forward into drinks");
+    ticks = 600;
+    mmdrive_with_gyro(gyro_z, 1500, &mmticks_reached, (void*)&ticks, bias);
+    puts("Rotating claw to get drinks");
+    claw_rotate(1024, 2047, 4);
+    msleep(500);
+    claw_rotate(0, 2047, 0);
+    msleep(500);
+    claw_rotate(100, 620, 0);
+    msleep(500);
+    ticks = 500;
+    mmdrive_with_gyro(gyro_z, 1500, &mmticks_reached, (void*)&ticks, bias);
+    return 1;
 }
