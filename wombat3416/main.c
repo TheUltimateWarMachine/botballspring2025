@@ -15,7 +15,7 @@
 #define ARM_Y 1
 #define CLAW_SERVO 2 // Servo port for claw
 #define CLAW_OPEN 00 // Open position for claw servo
-#define CLAW_CLOSED 1600 // Closed position for claw servo
+#define CLAW_CLOSED 1700 // Closed position for claw servo
 #define ARM_DOWN 500 // Lower position for arm motor
 #define ARM_UP 1500 // Raised position for arm motor
 #define abs(x) ((x) < 0 ? -(x) : (x))
@@ -134,8 +134,8 @@ int main() {
     mmdrive(750, ticks);
     mm_sidedrive(MM_SIDEDRIVE_RIGHT, 500, &mmticks_reached, &ticks);
     mmdrive_rotate_deg(90);
-    printf("driving\n");
-    straight_square_up(1500, 1000);
+    printf("driving to 1st cup\n");
+    straight_square_up(1500, 7600);
     ticks = 1000;
     mm_sidedrive(MM_SIDEDRIVE_LEFT, 900, &mmticks_reached, &ticks);
     ticks = 80;
@@ -161,7 +161,7 @@ int main() {
     ticks = 600;
     mm_sidedrive(MM_SIDEDRIVE_RIGHT, 1500, &mmticks_reached, &ticks);
     mmdrive(750, 400);
-    mmdrive(-750, 80);
+    mmdrive(-1000, 80);
     mmdrive_rotate_deg(92);
     ticks = 770;
     calibrate_gyro_axis(&bias, 15, gyro_z);
@@ -169,10 +169,10 @@ int main() {
     puts("Putting cup down");
     claw_rotate(115, 775, 2);
     msleep(200);
-    claw_power(1300);
+    claw_power(1000);
     msleep(30);
     claw_power(CLAW_OPEN);
-    mmdrive(500, 500);
+    mmdrive(850, 500);
     puts("\t[+]Done with cup1. Moving to cup2...");
     claw_rotate(115, 2047, 5);
     mmdrive_rotate_deg(-2);
@@ -186,44 +186,63 @@ int main() {
     ticks = 200;
     mm_sidedrive(MM_SIDEDRIVE_LEFT, 1500, &mmticks_reached, (void*)&ticks);
     mmdrive_rotate_deg(-90);
-    puts("line squaring up");
+    puts("line squaring up to get 2nd cup");
     ticks = 2200;
     mmdrive_with_gyro(gyro_z, 1500, &mmticks_reached, (void*)&ticks, bias);
     claw_rotate(300, 800, 3);
     straight_square_up(7600, 500);
-	ticks = 1050;
+    puts("driving forward to get 2nd cup");
+	ticks = 980;
     mmdrive_with_gyro(gyro_z, 1500, &mmticks_reached, (void*)&ticks, bias);
     claw_rotate(300, 870, 1);
-    claw_power(1700);
-    puts("\t[+] Got cup2, adding drinks.");
+    claw_power(CLAW_CLOSED);
+    puts("\t[+] Got cup2, driving backwards.");
+    msleep(5000);
     straight_square_up(-1000, 1750);
-    puts("sleeping for 5 seconds");
+    puts("completed backing up after picking up 2nd cup");
     msleep(5000);
     ticks = 400;
     mmdrive_with_gyro(gyro_z, -1500, &mmticks_reached, (void*)&ticks, bias);
-    puts("sliding right");
+    puts("sliding right to the black line");
     int sensor = 0;
+    msleep(5000);
     mm_sidedrive(MM_SIDEDRIVE_RIGHT, 1500, &mmblack_reached, (void*)&sensor);
-    ticks = 750;
+    ticks = 220;
     mm_sidedrive(MM_SIDEDRIVE_RIGHT, 1500, &mmticks_reached, (void*)&ticks);
-    straight_square_up(750, 500);
+    puts("sliding right to align with the drink");
+    msleep(5000);
+    straight_square_up(500, 500);
     puts("Depositing cup");
-    claw_rotate(1024, 950, 5);
+    puts("rotating claw to 90 degrees and 80 degrees");
+    claw_rotate(1024, 1000, 5);
     msleep(300);
     claw_power(1200);
     msleep(300);
     claw_power(CLAW_OPEN);
     puts("Going forward into drinks");
-    ticks = 600;
+    ticks = 605;
     mmdrive_with_gyro(gyro_z, 1500, &mmticks_reached, (void*)&ticks, bias);
     puts("Rotating claw to get drinks");
+    puts("rotating claw to 90 degrees and 180 degrees: 2nd cup");
     claw_rotate(1024, 2047, 4);
     msleep(500);
     claw_rotate(0, 2047, 0);
     msleep(500);
-    claw_rotate(100, 620, 0);
+    puts("rotating claw to grab drink1");
+    claw_rotate(200, 560, 0);
     msleep(500);
-    ticks = 500;
+    ticks = 640;
+    puts("Driving forward to drink1");
     mmdrive_with_gyro(gyro_z, 1500, &mmticks_reached, (void*)&ticks, bias);
+    puts("Closing claw to get drink1");
+    claw_power(1970);
+    msleep(500);
+    puts("Driving back w/ drink1");
+    straight_square_up(-1500, 1500);
+    msleep(500);
+    puts("turning claw to drop drink1 into cup2");
+    claw_rotate(210, 1800, 3);
+    claw_rotate(1000, 1800, 7);
+    claw_power(CLAW_OPEN);
     return 1;
 }
